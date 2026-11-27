@@ -1,5 +1,8 @@
 # Opencode Provider Mistral-Vibe
 
+[![npm package](https://img.shields.io/npm/v/@aiprimitivesstudio/opencode-mistral-vibe?label=npm&logo=npm)](https://www.npmjs.com/package/@aiprimitivesstudio/opencode-mistral-vibe)
+[![GitHub release](https://img.shields.io/github/v/release/AiPrimitivesStudio/Opencode-Provider-Mistral-Vibe?label=release&logo=github)](https://github.com/AiPrimitivesStudio/Opencode-Provider-Mistral-Vibe/releases)
+
 Adds [Mistral Vibe](https://github.com/mistralai/mistral-vibe) to
 [OpenCode](https://opencode.ai) as a model provider, so your coding agent runs
 on the models your Vibe plan already pays for and not on a pay-per-token API key.
@@ -27,7 +30,13 @@ that means:
 
 ## Quick start
 
-On the machine running the OpenCode server:
+On the machine running the OpenCode server, install the plugin from npm:
+
+```sh
+opencode plugin add @aiprimitivesstudio/opencode-mistral-vibe
+```
+
+or straight from the GitHub repository:
 
 ```sh
 opencode plugin add "github:AiPrimitivesStudio/Opencode-Provider-Mistral-Vibe#main::path:package"

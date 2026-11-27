@@ -1,0 +1,4 @@
+# never ship Python bytecode in the npm package (npm packs the
+# filesystem, not git, so .gitignore alone does not protect publishes)
+__pycache__/
+*.pyc

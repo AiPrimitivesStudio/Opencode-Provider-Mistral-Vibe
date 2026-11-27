@@ -29,6 +29,9 @@ jobs:
   release:
     needs: ci
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write # OIDC for npm trusted publishing (npm >= 11.5, hence node 24)
     steps:
       - uses: actions/checkout@v4
         with:
@@ -36,7 +39,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
 
       - name: Compute the next semver version
         run: |
@@ -112,7 +115,19 @@ jobs:
           set -euo pipefail
           gh release create "$NEXT_TAG" \
             --title "$NEXT_TAG" \
-            --notes "Install with OpenCode: opencode plugin add \"github:AiPrimitivesStudio/Opencode-Provider-Mistral-Vibe#$NEXT_TAG::path:package\"" \
+            --notes "Install with OpenCode: opencode plugin add \"github:AiPrimitivesStudio/Opencode-Provider-Mistral-Vibe#$NEXT_TAG::path:package\" or opencode plugin add @aiprimitivesstudio/opencode-mistral-vibe@$NEXT_VERSION" \
             --generate-notes
         env:
           GH_TOKEN: ${{ github.token }}
+
+      - name: Publish to npm (trusted publishing)
+        if: steps.guard.outputs.current == 'true' && env.SKIP_RELEASE != 'true'
+        working-directory: package
+        run: |
+          set -euo pipefail
+          # GitHub renders the README's mermaid natively; npm does not.
+          # scripts/npm-readme.mjs swaps the mermaid block for a rendered
+          # image so the npm page shows the diagram as a picture.
+          node ../scripts/npm-readme.mjs
+          cp ../LICENSE .
+          npm publish --provenance --access public --tag latest
