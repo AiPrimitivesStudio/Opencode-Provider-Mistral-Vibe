@@ -57,7 +57,7 @@ jobs:
               echo "::error::Standalone token lines are not allowed in '$subject' - the token belongs inside a changes line so it is never silently ignored"
               status=1
             fi
-          done < <(git log --format='%B%x1e' "$base"..HEAD)
+          done < <(git log --no-merges --format='%B%x1e' "$base"..HEAD)
           exit $status
 
   test:
