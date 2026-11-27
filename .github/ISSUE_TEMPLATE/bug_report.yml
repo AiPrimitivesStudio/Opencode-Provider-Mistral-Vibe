@@ -1,0 +1,107 @@
+name: Bug report
+description: Something is broken, fails, or misbehaves in the plugin
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. This plugin never masks errors - the exact text
+        you saw is usually the fastest path to the cause, so please paste it
+        verbatim. Secrets are already redacted by the plugin before you see
+        anything; do not re-redact error classes or HTTP statuses.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What you expected vs what actually happened.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Commands, prompts, and the model you used.
+      placeholder: |
+        1. opencode plugin add ...
+        2. /connect -> Mistral Vibe -> Use Vibe login
+        3. Sent a message with model mistral-vibe/...
+    validations:
+      required: true
+  - type: textarea
+    id: error
+    attributes:
+      label: The exact error message
+      description: |
+        Paste it verbatim, including any parenthesized network diagnostic -
+        that text carries the real cause (offline DNS failure, refused
+        connection, quota, auth).
+      render: shell
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options:
+        - Windows
+        - macOS
+        - Linux
+    validations:
+      required: true
+  - type: input
+    id: opencode-version
+    attributes:
+      label: OpenCode version
+      description: Output of `opencode --version` if available.
+    validations:
+      required: true
+  - type: dropdown
+    id: install
+    attributes:
+      label: How is the plugin installed?
+      options:
+        - '"#main::path:package" (follows the branch)'
+        - '"#latest::path:package" (newest release tag)'
+        - '"#vX.Y.Z::path:package" (pinned release tag)'
+        - Local development checkout
+        - Other / not sure
+    validations:
+      required: true
+  - type: dropdown
+    id: runtime
+    attributes:
+      label: Mistral Vibe runtime
+      description: How the Python runtime that runs the bridge got there.
+      options:
+        - Installed automatically by the plugin (I had none)
+        - Installed automatically by the plugin (mine was incompatible)
+        - My own compatible mistral-vibe 3.1.x is installed
+        - I set OPENCODE_VIBE_PYTHON explicitly
+        - Not sure
+    validations:
+      required: true
+  - type: dropdown
+    id: login
+    attributes:
+      label: Did the Vibe login (vibe --setup) complete?
+      options:
+        - "Yes"
+        - "Not yet"
+        - "Unsure"
+    validations:
+      required: true
+  - type: textarea
+    id: env
+    attributes:
+      label: Custom environment
+      description: Any OPENCODE_VIBE_* variables, VIBE_HOME changes, proxies or firewalls. Write "none" if none.
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Already tried
+      options:
+        - label: The model appears in /models
+        - label: Reconnected the Mistral Vibe integration after login
+        - label: Restarted the opencode service

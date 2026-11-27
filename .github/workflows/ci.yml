@@ -1,0 +1,110 @@
+name: 00 - Continuous Integration
+
+on:
+  pull_request:
+  workflow_dispatch:
+  workflow_call:
+
+# Pushes to main are covered by cd.yml, which runs these same gates (via
+# workflow_call) before every release; PRs run them standalone here.
+
+jobs:
+  commit-policy:
+    # The commit message style IS the release policy (cd.yml derives the
+    # semver bump from it); reject pull requests that do not follow it.
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Enforce commit message policy
+        run: |
+          set -euo pipefail
+          base="${{ github.event.pull_request.base.sha }}"
+          format='^(feat|fix|chore|docs|test|refactor|perf|ci|build|style)(\([a-z0-9._/-]+\))?: .+'
+          item='^- (feat|fix|chore|docs|test|refactor|perf|ci|build|style)(\([a-z0-9._/-]+\))?: .+ \(SEMVER_(MAJOR|MINOR|PATCH)\)$'
+          attempted='^- [a-z]+(\([a-z0-9._/-]+\))?: '
+          status=0
+          while IFS= read -r -d $'\x1e' message; do
+            subject="$(head -n 1 <<< "$message")"
+            if ! grep -qE "$format" <<< "$subject"; then
+              echo "::error::Subject must follow '<type>(<scope>)?: <subject>' (allowed types: feat fix chore docs test refactor perf ci build style): '$subject'"
+              status=1
+            fi
+            if [ "${#subject}" -gt 72 ]; then
+              echo "::error::Subject longer than 72 characters (${#subject}): '$subject'"
+              status=1
+            fi
+            if grep -qE '\.$' <<< "$subject"; then
+              echo "::error::Subject must not end with a period: '$subject'"
+              status=1
+            fi
+            items="$(grep -cE "$item" <<< "$message" || true)"
+            if [ "$items" -eq 0 ]; then
+              echo "::error::Commit must list its work as changes lines: '- <type>(<scope>)?: <what> (SEMVER_...)', one per unit of work: '$subject'"
+              echo "   The highest item token is the commit's bump. Template: CONTRIBUTING.md"
+              status=1
+            fi
+            malformed="$(grep -E "$attempted" <<< "$message" | grep -cvE "$item" || true)"
+            if [ "$malformed" -gt 0 ]; then
+              echo "::error::Changes lines must match '- <type>(<scope>)?: <what> (SEMVER_...)' exactly (one token per line):"
+              grep -E "$attempted" <<< "$message" | grep -vE "$item" | sed 's/^/     /'
+              status=1
+            fi
+            if grep -qxE 'SEMVER_(MAJOR|MINOR|PATCH)' <<< "$message"; then
+              echo "::error::Standalone token lines are not allowed in '$subject' - the token belongs inside a changes line so it is never silently ignored"
+              status=1
+            fi
+          done < <(git log --format='%B%x1e' "$base"..HEAD)
+          exit $status
+
+  test:
+    # windows-latest: the suite is verified on Windows. The macOS/Linux run of
+    # the matrix needs the remaining unix-specific test fixtures (exec bits,
+    # HOME-based discovery) hermetic first; extend runs-on then.
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # The offline unit suite spawns Python (fake bridge + in-process bridge
+      # tests); point the test seam at the runner's interpreter explicitly.
+      - name: Resolve the Python interpreter for the test seams
+        shell: pwsh
+        run: |
+          $python = (Get-Command python).Source
+          "OPENCODE_VIBE_PYTHON=$python" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Install dependencies
+        working-directory: package
+        run: npm install --no-audit --no-fund
+
+      - name: Typecheck
+        working-directory: package
+        run: npm run typecheck
+
+      - name: Lint Python (ruff)
+        run: |
+          python -m pip install --quiet --disable-pip-version-check "ruff==0.17.6"
+          ruff check package
+
+      - name: Lint JavaScript (eslint)
+        working-directory: package
+        run: npm run lint
+
+      - name: Unit tests (offline, no API spend)
+        working-directory: package
+        run: npm run test:unit
+
+      - name: Coverage gate (>= 85% lines AND branches)
+        working-directory: package
+        run: npm run coverage:unit

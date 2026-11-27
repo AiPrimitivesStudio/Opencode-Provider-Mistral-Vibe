@@ -1,0 +1,9 @@
+# Ruff configuration - lints the Python bridge and its test helpers.
+# Run from the repo root: ruff check package
+line-length = 120
+
+[lint]
+# Ruff defaults (a pragmatic pycodestyle/pyflakes subset) plus blind-except
+# guards. The bridge deliberately catches broad exceptions ONLY where a real
+# cause is preserved; every such site carries `# noqa: BLE001` with a reason.
+select = ["E4", "E7", "E9", "F", "BLE"]

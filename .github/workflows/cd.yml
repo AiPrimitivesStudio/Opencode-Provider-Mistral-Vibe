@@ -1,0 +1,118 @@
+name: 01 - Continuous Delivery
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: "Semver bump level (auto = derive from the commits since the last release)"
+        type: choice
+        options: [auto, major, minor, patch]
+        default: auto
+
+# One release at a time: a queued run recomputes the version after the
+# previous one finishes, so tags can never collide.
+concurrency:
+  group: cd-release
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  ci:
+    # The full CI gates (typecheck, unit suite, coverage) must pass before
+    # anything ships.
+    uses: ./.github/workflows/ci.yml
+
+  release:
+    needs: ci
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # full history + tags for the semver computation
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Compute the next semver version
+        run: |
+          set -euo pipefail
+          bump="${{ inputs.bump || 'auto' }}"
+          latest="$(git tag -l 'v*' --sort=-v:refname | head -n 1 || true)"
+          base="$(cd package && node -p "require('./package.json').version")"
+          # The latest tag is the release ledger; package.json is the seed
+          # before the first tag exists.
+          if [ -n "$latest" ]; then base="${latest#v}"; fi
+          if [ "$bump" = "auto" ]; then
+            # Itemized-token policy: tokens only count inside changes lines
+            # ('- <type>(<scope>)?: <what> (SEMVER_...)'); the highest token in
+            # the release range wins; no tokens (direct pushes) -> patch.
+            log="$(git log --format='%B' ${latest:+$latest..}HEAD)"
+            item='^- (feat|fix|chore|docs|test|refactor|perf|ci|build|style)(\([a-z0-9._/-]+\))?: .+ \(SEMVER_'
+            if echo "$log" | grep -qE "${item}MAJOR\)"; then bump=major
+            elif echo "$log" | grep -qE "${item}MINOR\)"; then bump=minor
+            else bump=patch
+            fi
+          fi
+          IFS='.' read -r major minor patch <<< "$base"
+          case "$bump" in
+            major) next="$((major + 1)).0.0" ;;
+            minor) next="$major.$((minor + 1)).0" ;;
+            patch) next="$major.$minor.$((patch + 1))" ;;
+          esac
+          echo "base=$base bump=$bump next=$next"
+          {
+            echo "NEXT_VERSION=$next"
+            echo "NEXT_TAG=v$next"
+          } >> "$GITHUB_ENV"
+          # Nothing to release when HEAD already is the tagged release (a
+          # clean seed push, or a re-run): skip bump, tag and release.
+          if [ -n "$latest" ] && [ "$(git rev-list --count "$latest..HEAD")" -eq 0 ]; then
+            echo "Nothing to release: HEAD is already the $latest release."
+            echo "SKIP_RELEASE=true" >> "$GITHUB_ENV"
+          fi
+
+      - name: Guard against a newer push having landed
+        id: guard
+        run: |
+          git fetch origin main
+          if [ "$(git rev-parse origin/main)" = "${{ github.sha }}" ]; then
+            echo "current=true" >> "$GITHUB_OUTPUT"
+          else
+            # A newer push already landed; its run releases a range that
+            # includes this commit, so nothing is lost by skipping here.
+            echo "origin/main moved past this sha; a newer run owns the release. Skipping."
+            echo "current=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Bump package version, tag, push
+        if: steps.guard.outputs.current == 'true' && env.SKIP_RELEASE != 'true'
+        run: |
+          set -euo pipefail
+          npm version "$NEXT_VERSION" --no-git-tag-version --prefix package
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add package/package.json package/package-lock.json
+          git commit -m "chore(release): $NEXT_TAG"
+          git tag "$NEXT_TAG"
+          git push origin main
+          git push origin "$NEXT_TAG"
+          # Moving pointer for users who install via #latest::path:package.
+          # Not v-prefixed, so the semver ledger (git tag -l 'v*') ignores it.
+          git tag -f latest
+          git push origin latest --force
+
+      - name: Create the GitHub release
+        if: steps.guard.outputs.current == 'true' && env.SKIP_RELEASE != 'true'
+        run: |
+          set -euo pipefail
+          gh release create "$NEXT_TAG" \
+            --title "$NEXT_TAG" \
+            --notes "Install with OpenCode: opencode plugin add \"github:AiPrimitivesStudio/Opencode-Provider-Mistral-Vibe#$NEXT_TAG::path:package\"" \
+            --generate-notes
+        env:
+          GH_TOKEN: ${{ github.token }}

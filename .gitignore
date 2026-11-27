@@ -1,0 +1,12 @@
+# build artifacts
+__pycache__/
+*.pyc
+coverage/
+
+# dependencies
+node_modules/
+
+# local state
+*.log
+*.pid
+.env

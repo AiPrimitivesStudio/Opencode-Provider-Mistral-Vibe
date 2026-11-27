@@ -1,0 +1,62 @@
+{
+  "name": "opencode-mistral-vibe",
+  "version": "0.1.0",
+  "license": "MIT",
+  "author": "AiPrimitivesStudio",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AiPrimitivesStudio/Opencode-Provider-Mistral-Vibe.git"
+  },
+  "homepage": "https://github.com/AiPrimitivesStudio/Opencode-Provider-Mistral-Vibe#readme",
+  "bugs": {
+    "url": "https://github.com/AiPrimitivesStudio/Opencode-Provider-Mistral-Vibe/issues"
+  },
+  "keywords": [
+    "opencode",
+    "opencode-plugin",
+    "mistral",
+    "vibe",
+    "coding-agent"
+  ],
+  "prettier": {
+    "semi": false,
+    "printWidth": 120
+  },
+  "description": "Mistral Vibe model integration for OpenCode V2",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./server": "./src/index.ts"
+  },
+  "files": [
+    "src"
+  ],
+  "scripts": {
+    "test": "node --import ./test/loader.mjs --experimental-transform-types --test \"test/*.test.mjs\"",
+    "test:unit": "node --import ./test/loader.mjs --experimental-transform-types --test \"test/unit*.test.mjs\"",
+    "coverage:unit": "c8 --check-coverage --lines 85 --branches 85 --all --include \"src/**/*.ts\" --reporter=text --reporter=text-summary node --import ./test/loader.mjs --experimental-transform-types --test \"test/unit*.test.mjs\"",
+    "test:e2e": "node --import ./test/loader.mjs --experimental-transform-types --test \"test/bridge*.test.mjs\" \"test/e2e*.test.mjs\"",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "coverage": "c8 --check-coverage --lines 85 --branches 85 --all --include \"src/**/*.ts\" --reporter=text --reporter=text-summary node --import ./test/loader.mjs --experimental-transform-types --test \"test/*.test.mjs\"",
+    "dev": "node ../../../scripts/dev.mjs",
+    "publish": "node ../../../scripts/publish.mjs"
+  },
+  "peerDependencies": {
+    "@opencode/plugin": "^2.2.5"
+  },
+  "dependencies": {
+    "@opencode/plugin": "^2.2.5",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@ai-sdk/provider": "4.0.39",
+    "@types/node": "^24.0.0",
+    "c8": "^12.0.0",
+    "eslint": "^10.16.0",
+    "globals": "^17.14.0",
+    "typescript": "^5.9.0",
+    "typescript-eslint": "^8.74.0"
+  },
+  "main": "./src/index.ts"
+}
