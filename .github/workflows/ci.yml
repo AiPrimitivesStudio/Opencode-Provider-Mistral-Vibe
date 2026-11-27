@@ -28,7 +28,10 @@ jobs:
           attempted='^- [a-z]+(\([a-z0-9._/-]+\))?: '
           status=0
           while IFS= read -r -d $'\x1e' message; do
-            subject="$(head -n 1 <<< "$message")"
+            subject="$(grep -m1 . <<< "$message" || true)"
+            # git log emits an extra newline after each entry: skip the empty
+            # segments that leaves behind (machine separator, not a commit).
+            [ -z "$subject" ] && continue
             if ! grep -qE "$format" <<< "$subject"; then
               echo "::error::Subject must follow '<type>(<scope>)?: <subject>' (allowed types: feat fix chore docs test refactor perf ci build style): '$subject'"
               status=1
