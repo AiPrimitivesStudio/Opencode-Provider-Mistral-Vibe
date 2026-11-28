@@ -103,7 +103,11 @@ function discard() {
 function prewarm(executable: string) {
   if (!PREWARM || warm) return
   try {
-    const child = spawn(executable, ["-u", BRIDGE, "--warm"], { stdio: ["pipe", "pipe", "ignore"], windowsHide: true, env: JSON.parse(environment()) })
+    const child = spawn(executable, ["-u", BRIDGE, "--warm"], {
+      stdio: ["pipe", "pipe", "ignore"],
+      windowsHide: true,
+      env: JSON.parse(environment()),
+    })
     const entry = { child, executable, env: environment(), timer: setTimeout(discard, WARM_IDLE_MS) }
     entry.timer.unref?.()
     child.unref()
@@ -139,7 +143,11 @@ function acquire(executable: string, standby: boolean): Worker {
     return child
   }
   discard()
-  const child = spawn(executable, ["-u", BRIDGE], { stdio: ["pipe", "pipe", "ignore"], windowsHide: true, env: JSON.parse(environment()) })
+  const child = spawn(executable, ["-u", BRIDGE], {
+    stdio: ["pipe", "pipe", "ignore"],
+    windowsHide: true,
+    env: JSON.parse(environment()),
+  })
   if (standby) prewarm(executable)
   return child
 }

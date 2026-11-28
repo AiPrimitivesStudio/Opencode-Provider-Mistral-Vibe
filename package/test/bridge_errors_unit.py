@@ -1,4 +1,5 @@
 """Unit tests for bridge.py error reporting. Run by bridge.errors.test.mjs."""
+
 import importlib.util
 import os
 import sys
@@ -22,9 +23,7 @@ def main():
     spec.loader.exec_module(bridge)
 
     # 1. The real exception text must reach the user, not a canned mask.
-    result = bridge.bridge_error_message(
-        Exception('HTTP 402: {"message":"billing_api_budget_exhausted"}')
-    )
+    result = bridge.bridge_error_message(Exception('HTTP 402: {"message":"billing_api_budget_exhausted"}'))
     check("real exception text is preserved", "billing_api_budget_exhausted" in result["message"], result)
     check("no canned installation mask", "Check the Vibe installation" not in result["message"], result)
     check("exception class name is preserved", "Exception" in result["message"], result)

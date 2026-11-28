@@ -56,9 +56,7 @@ def login_command():
     Naming it keeps the login on the runtime actually serving requests (the
     plugin-managed one when bootstrapped), not whatever is first on PATH.
     """
-    candidate = os.path.join(
-        os.path.dirname(sys.executable), "vibe.exe" if os.name == "nt" else "vibe"
-    )
+    candidate = os.path.join(os.path.dirname(sys.executable), "vibe.exe" if os.name == "nt" else "vibe")
     return candidate if os.access(candidate, os.X_OK) else "vibe"
 
 
@@ -161,9 +159,7 @@ async def main():
             try:
                 async with asyncio.timeout(5):
                     latest = await model_catalog.fetch_and_cache_model_catalog(
-                        config.model_copy(
-                            update={"experimental_enable_model_catalog": True}
-                        )
+                        config.model_copy(update={"experimental_enable_model_catalog": True})
                     )
             except TimeoutError:
                 latest = None
@@ -188,9 +184,7 @@ async def main():
         if mistral is not None:
             api_base = mistral.provider.api_base.rstrip("/")
             credential = mistral.credentials.pinned()
-            principal = await oidc_with_diagnosis(
-                bounded(resolve_principal(mistral), CREDENTIAL_TIMEOUT_S), api_base
-            )
+            principal = await oidc_with_diagnosis(bounded(resolve_principal(mistral), CREDENTIAL_TIMEOUT_S), api_base)
             disk_key = (
                 None
                 if principal is None
@@ -211,11 +205,7 @@ async def main():
             latest = None
             try:
                 async with asyncio.timeout(5):
-                    latest = (
-                        await fetch_model_catalog(api_base, credential)
-                        if credential is not None
-                        else None
-                    )
+                    latest = await fetch_model_catalog(api_base, credential) if credential is not None else None
             except TimeoutError:
                 pass
             if latest is not None:
@@ -262,11 +252,7 @@ async def main():
                         "images": bool(model.supports_images),
                         "efforts": model.thinking_levels or [],
                         "hidden": shadowed and alias == legacy.alias,
-                        "authenticated": bool(
-                            resolve_api_key(
-                                config.get_provider_for_model(model).api_key_env_var
-                            )
-                        ),
+                        "authenticated": bool(resolve_api_key(config.get_provider_for_model(model).api_key_env_var)),
                     }
                     for alias, model in models.items()
                 ],
@@ -303,10 +289,9 @@ async def main():
         # plus tenant headers, like the Vibe host does in
         # vibe/app_server/_provider_credentials.py.
         from vibe.setup.auth._oidc_runtime import oidc_headers
+
         extra_headers = dict(
-            await oidc_with_diagnosis(
-                bounded(oidc_headers(provider.api_base), CREDENTIAL_TIMEOUT_S), provider.api_base
-            )
+            await oidc_with_diagnosis(bounded(oidc_headers(provider.api_base), CREDENTIAL_TIMEOUT_S), provider.api_base)
         )
         token = extract_oidc_token(extra_headers)
     if not token:

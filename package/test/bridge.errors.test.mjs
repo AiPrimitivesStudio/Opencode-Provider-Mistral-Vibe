@@ -32,8 +32,5 @@ test("generate without any credential reports what was actually checked", async 
 
 test("bridge.py no longer masks failures with the generic installation message", async () => {
   const source = readFileSync(bridgePath, "utf8")
-  assert.ok(
-    !source.includes("Check the Vibe installation and run vibe --setup"),
-    "the generic mask must be gone",
-  )
+  assert.ok(!source.includes("Check the Vibe installation and run vibe --setup"), "the generic mask must be gone")
 })

@@ -37,21 +37,25 @@ self-contained.
 
 ## The gates your PR must pass
 
-CI runs these on every pull request, and they are the same commands locally:
+**These gates are REQUIRED - CI enforces every one of them, and the branch
+protection on `main` refuses to merge a PR with any red or missing check.**
+They are the same commands locally, and both formatters fail on drift
+instead of fixing it in CI - run the `--write` variants before pushing:
 
 ```sh
-npm run typecheck      # tsc --noEmit
-npm run test:unit      # offline unit suite, no API spend
-npm run coverage:unit  # c8 gate: >= 85% lines AND >= 85% branches
-ruff check .           # Python lint (pip install ruff; config in ruff.toml)
-npm run lint           # JS/TS lint (eslint; config in eslint.config.mjs)
+npm run format:check  # REQUIRED: JS/TS formatting (prettier; fix: npm run format)
+npm run typecheck      # REQUIRED: tsc --noEmit
+npm run test:unit      # REQUIRED: offline unit suite, no API spend
+npm run coverage:unit  # REQUIRED: c8 gate >= 85% lines AND >= 85% branches
+ruff check .           # REQUIRED: Python lint (pip install ruff; config in ruff.toml)
+ruff format --check .  # REQUIRED: Python formatting (fix: ruff format .)
+npm run lint           # REQUIRED: JS/TS lint (eslint; config in eslint.config.mjs)
 ```
 
-All five are expected green before review.
-
-The token-spending suites (`npm run test:e2e`, `npm run coverage`) hit the real
-Mistral API through the real Vibe plan and are **not** run in CI and are not
-required from contributors - the maintainer runs them before releasing.
+All seven are expected green before review. The token-spending suites
+(`npm run test:e2e`, `npm run coverage`) hit the real Mistral API through
+the real Vibe plan and are **not** run in CI and are not required from
+contributors - the maintainer runs them before releasing.
 
 ## Ground rules
 

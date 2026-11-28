@@ -6,6 +6,10 @@ coverage/
 # dependencies
 node_modules/
 
+# staged for npm publish (CD and the manual first publish copy them into package/)
+package/README.md
+package/LICENSE
+
 # local state
 *.log
 *.pid

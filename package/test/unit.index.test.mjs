@@ -17,9 +17,23 @@ process.env.OPENCODE_VIBE_PYTHON = process.env.OPENCODE_VIBE_PYTHON ?? vibePytho
 const plugin = (await import("../src/index.ts")).default
 
 function mockContext({ workspaceID, saved, connection } = {}) {
-  const calls = { storageSet: [], status: [], reloads: 0, hooks: [], providerAdd: null, adds: [], integrationUpdate: null, methodUpdate: null }
+  const calls = {
+    storageSet: [],
+    status: [],
+    reloads: 0,
+    hooks: [],
+    providerAdd: null,
+    adds: [],
+    integrationUpdate: null,
+    methodUpdate: null,
+  }
   const queue = []
-  const makeEditor = () => ({ add: (entry) => { calls.providerAdd = entry; calls.adds.push(entry) } })
+  const makeEditor = () => ({
+    add: (entry) => {
+      calls.providerAdd = entry
+      calls.adds.push(entry)
+    },
+  })
   let transform
   const ctx = {
     location: { workspaceID },
@@ -105,12 +119,17 @@ test("a stored catalog is used until the probe replaces it", async () => {
     type: "catalog",
     version: "3.1.3",
     source: "cache",
-    models: [{ id: "saved-model", name: "Saved", context: 5, output: 5, images: false, efforts: [], authenticated: true }],
+    models: [
+      { id: "saved-model", name: "Saved", context: 5, output: 5, images: false, efforts: [], authenticated: true },
+    ],
   }
   const ctx = mockContext({ saved, connection: CONNECTION })
   const teardown = await plugin.setup(ctx)
   try {
-    assert.ok(ctx.calls.adds[0].models.some((model) => model.id === "saved-model"), "the stored catalog must register first")
+    assert.ok(
+      ctx.calls.adds[0].models.some((model) => model.id === "saved-model"),
+      "the stored catalog must register first",
+    )
   } finally {
     await teardown()
   }

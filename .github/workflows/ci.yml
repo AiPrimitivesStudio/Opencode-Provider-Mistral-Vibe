@@ -28,7 +28,10 @@ jobs:
           attempted='^- [a-z]+(\([a-z0-9._/-]+\))?: '
           status=0
           while IFS= read -r -d $'\x1e' message; do
-            subject="$(head -n 1 <<< "$message")"
+            subject="$(grep -m1 . <<< "$message" || true)"
+            # git log emits an extra newline after each entry: skip the empty
+            # segments that leaves behind (machine separator, not a commit).
+            [ -z "$subject" ] && continue
             if ! grep -qE "$format" <<< "$subject"; then
               echo "::error::Subject must follow '<type>(<scope>)?: <subject>' (allowed types: feat fix chore docs test refactor perf ci build style): '$subject'"
               status=1
@@ -57,7 +60,7 @@ jobs:
               echo "::error::Standalone token lines are not allowed in '$subject' - the token belongs inside a changes line so it is never silently ignored"
               status=1
             fi
-          done < <(git log --format='%B%x1e' "$base"..HEAD)
+          done < <(git log --no-merges --format='%B%x1e' "$base"..HEAD)
           exit $status
 
   test:
@@ -88,6 +91,10 @@ jobs:
         working-directory: package
         run: npm install --no-audit --no-fund
 
+      - name: Check formatting (prettier)
+        working-directory: package
+        run: npm run format:check
+
       - name: Typecheck
         working-directory: package
         run: npm run typecheck
@@ -96,6 +103,9 @@ jobs:
         run: |
           python -m pip install --quiet --disable-pip-version-check "ruff==0.17.6"
           ruff check package
+
+      - name: Check Python formatting (ruff format)
+        run: ruff format --check package
 
       - name: Lint JavaScript (eslint)
         working-directory: package

@@ -30,7 +30,10 @@ test("mistral-vibe connection is not in needs_auth", async () => {
 
 test("a prompt through the server gets an assistant answer", async () => {
   // Fresh session so the test never touches the user's existing sessions.
-  const created = await opencodeFetch("/api/session", { method: "POST", body: { title: "mistral-vibe plugin e2e test" } })
+  const created = await opencodeFetch("/api/session", {
+    method: "POST",
+    body: { title: "mistral-vibe plugin e2e test" },
+  })
   assert.equal(created.status, 200, `session creation failed: ${JSON.stringify(created.json).slice(0, 200)}`)
   const sessionID = created.json.data?.id ?? created.json.data?.sessionID ?? created.json.data?.id
   assert.ok(sessionID, `could not read session id from response: ${JSON.stringify(created.json).slice(0, 300)}`)
@@ -40,7 +43,10 @@ test("a prompt through the server gets an assistant answer", async () => {
       method: "POST",
       body: { model: MODEL },
     })
-    assert.ok(switched.status < 300, `switchModel failed (${switched.status}): ${JSON.stringify(switched.json).slice(0, 200)}`)
+    assert.ok(
+      switched.status < 300,
+      `switchModel failed (${switched.status}): ${JSON.stringify(switched.json).slice(0, 200)}`,
+    )
 
     const prompt = await opencodeFetch(`/api/session/${sessionID}/prompt`, {
       method: "POST",

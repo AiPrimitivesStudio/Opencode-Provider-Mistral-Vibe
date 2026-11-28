@@ -1,0 +1,5 @@
+# Pin LF everywhere: byte-identical checkouts on Windows, macOS and Linux.
+# GitHub's Windows runner images set core.autocrlf=true, which would otherwise
+# CRLF-ify the working tree and fail the prettier gate (and the .editorconfig
+# of every platform we claim to support).
+* text=auto eol=lf

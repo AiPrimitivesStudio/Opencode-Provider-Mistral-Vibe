@@ -64,9 +64,8 @@ test("run() rejects with the bridge error message and status", async () => {
 
 test("run() rejects invalid JSON from the bridge", async () => {
   const { emit } = collect()
-  await assert.rejects(
-    run(generate("invalid-json"), emit, new AbortController().signal),
-    (error) => /Invalid response from the Mistral Vibe bridge/.test(error.message),
+  await assert.rejects(run(generate("invalid-json"), emit, new AbortController().signal), (error) =>
+    /Invalid response from the Mistral Vibe bridge/.test(error.message),
   )
 })
 
@@ -90,33 +89,29 @@ test("run() rejects data emitted after the final event", async () => {
 
 test("run() rejects when the bridge exits without a final event", async () => {
   const { emit } = collect()
-  await assert.rejects(
-    run(generate("no-terminal"), emit, new AbortController().signal),
-    (error) => /stopped before completing/.test(error.message),
+  await assert.rejects(run(generate("no-terminal"), emit, new AbortController().signal), (error) =>
+    /stopped before completing/.test(error.message),
   )
 })
 
 test("run() rejects on a nonzero exit code", async () => {
   const { emit } = collect()
-  await assert.rejects(
-    run(generate("nonzero-exit"), emit, new AbortController().signal),
-    (error) => /stopped before completing/.test(error.message),
+  await assert.rejects(run(generate("nonzero-exit"), emit, new AbortController().signal), (error) =>
+    /stopped before completing/.test(error.message),
   )
 })
 
 test("run() rejects trailing bytes after the final event", async () => {
   const { emit } = collect()
-  await assert.rejects(
-    run(generate("trailing-bytes"), emit, new AbortController().signal),
-    (error) => /stopped before completing/.test(error.message),
+  await assert.rejects(run(generate("trailing-bytes"), emit, new AbortController().signal), (error) =>
+    /stopped before completing/.test(error.message),
   )
 })
 
 test("run() rejects an oversized protocol message", async () => {
   const { emit } = collect()
-  await assert.rejects(
-    run(generate("oversized"), emit, new AbortController().signal),
-    (error) => /oversized protocol message/.test(error.message),
+  await assert.rejects(run(generate("oversized"), emit, new AbortController().signal), (error) =>
+    /oversized protocol message/.test(error.message),
   )
 })
 
@@ -138,10 +133,7 @@ test("run() aborts mid-flight when the signal fires later", async () => {
     events.push(event)
     abort.abort(new Error("cancelled mid-flight"))
   }
-  await assert.rejects(
-    run(generate("hang"), emit, abort.signal),
-    (error) => error.message === "cancelled mid-flight",
-  )
+  await assert.rejects(run(generate("hang"), emit, abort.signal), (error) => error.message === "cancelled mid-flight")
   assert.equal(events.length, 1, "the abort must fire after the first event, mid-flight")
 })
 
@@ -151,9 +143,7 @@ test("run() rejects when the Python executable cannot start", async () => {
   try {
     await assert.rejects(
       run(generate(), collect().emit, new AbortController().signal),
-      (error) =>
-        /Cannot start the Mistral Vibe Python environment/.test(error.message) &&
-        /ENOENT/.test(error.message),
+      (error) => /Cannot start the Mistral Vibe Python environment/.test(error.message) && /ENOENT/.test(error.message),
     )
   } finally {
     process.env.OPENCODE_VIBE_PYTHON = previous

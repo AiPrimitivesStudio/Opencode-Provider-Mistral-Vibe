@@ -47,9 +47,7 @@ test("tool-call parts carry their raw json arguments", () => {
 })
 
 test("file parts accept base64 strings and buffers but reject URLs", () => {
-  const result = messages([
-    { role: "user", content: [{ type: "file", data: "aGk=", mediaType: "image/png" }] },
-  ])
+  const result = messages([{ role: "user", content: [{ type: "file", data: "aGk=", mediaType: "image/png" }] }])
   assert.deepEqual(result[0].content[0], { type: "image", data: "aGk=", mimeType: "image/png" })
 
   const fromBuffer = messages([
@@ -58,7 +56,10 @@ test("file parts accept base64 strings and buffers but reject URLs", () => {
   assert.equal(fromBuffer[0].content[0].mimeType, "image/jpeg")
 
   assert.throws(
-    () => messages([{ role: "user", content: [{ type: "file", data: new URL("https://x/y.png"), mediaType: "image/png" }] }]),
+    () =>
+      messages([
+        { role: "user", content: [{ type: "file", data: new URL("https://x/y.png"), mediaType: "image/png" }] },
+      ]),
     /downloaded image attachments/,
   )
   assert.throws(
@@ -68,10 +69,7 @@ test("file parts accept base64 strings and buffers but reject URLs", () => {
 })
 
 test("unknown part types are rejected", () => {
-  assert.throws(
-    () => messages([{ role: "user", content: [{ type: "mystery" }] }]),
-    /Unsupported Vibe message part/,
-  )
+  assert.throws(() => messages([{ role: "user", content: [{ type: "mystery" }] }]), /Unsupported Vibe message part/)
 })
 
 test("tool results map outputs and outcomes", () => {
@@ -84,7 +82,12 @@ test("tool results map outputs and outcomes", () => {
         { type: "tool-result", toolCallId: "c3", toolName: "read", output: { type: "json", value: { a: 1 } } },
         { type: "tool-result", toolCallId: "c4", toolName: "read", output: { type: "error-json", value: { b: 2 } } },
         { type: "tool-result", toolCallId: "c5", toolName: "read", output: { type: "execution-denied" } },
-        { type: "tool-result", toolCallId: "c6", toolName: "read", output: { type: "execution-denied", reason: "not allowed" } },
+        {
+          type: "tool-result",
+          toolCallId: "c6",
+          toolName: "read",
+          output: { type: "execution-denied", reason: "not allowed" },
+        },
       ],
     },
   ])
@@ -130,7 +133,12 @@ test("tool results with content arrays map text and image parts", () => {
         {
           role: "tool",
           content: [
-            { type: "tool-result", toolCallId: "c", toolName: "x", output: { type: "content", value: [{ type: "weird" }] } },
+            {
+              type: "tool-result",
+              toolCallId: "c",
+              toolName: "x",
+              output: { type: "content", value: [{ type: "weird" }] },
+            },
           ],
         },
       ]),
