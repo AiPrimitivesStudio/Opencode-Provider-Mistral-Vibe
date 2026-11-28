@@ -4,6 +4,7 @@ Speaks the same NDJSON protocol as src/bridge.py but acts out the scenario
 named in the request (or in the FAKE_BRIDGE_SCENARIO environment variable).
 Run with: python -u fake-bridge.py
 """
+
 import json
 import os
 import sys
@@ -13,10 +14,43 @@ CATALOG = {
     "version": "3.1.3",
     "source": "remote",
     "models": [
-        {"id": "fake-model", "name": "Fake Model", "context": 1000, "output": 100, "images": False, "efforts": [], "authenticated": True},
-        {"id": "zai-glm-5-3-flash", "name": "GLM Flash", "context": 2000, "output": 200, "images": False, "efforts": ["low", "high"], "authenticated": True},
-        {"id": "deepseek-v4-1-flash-1017", "name": "DeepSeek Flash", "context": 2000, "output": 200, "images": False, "efforts": ["low", "medium", "high"], "authenticated": True},
-        {"id": "hidden-model", "name": "Hidden Model", "context": 1000, "output": 100, "images": False, "efforts": [], "authenticated": True, "hidden": True},
+        {
+            "id": "fake-model",
+            "name": "Fake Model",
+            "context": 1000,
+            "output": 100,
+            "images": False,
+            "efforts": [],
+            "authenticated": True,
+        },
+        {
+            "id": "zai-glm-5-3-flash",
+            "name": "GLM Flash",
+            "context": 2000,
+            "output": 200,
+            "images": False,
+            "efforts": ["low", "high"],
+            "authenticated": True,
+        },
+        {
+            "id": "deepseek-v4-1-flash-1017",
+            "name": "DeepSeek Flash",
+            "context": 2000,
+            "output": 200,
+            "images": False,
+            "efforts": ["low", "medium", "high"],
+            "authenticated": True,
+        },
+        {
+            "id": "hidden-model",
+            "name": "Hidden Model",
+            "context": 1000,
+            "output": 100,
+            "images": False,
+            "efforts": [],
+            "authenticated": True,
+            "hidden": True,
+        },
     ],
 }
 
@@ -24,7 +58,13 @@ RESULT = {
     "type": "result",
     "parts": [{"type": "text", "text": "fake answer"}],
     "finish_reason": "stop",
-    "usage": {"input_tokens": 1, "output_tokens": 2, "cached_input_tokens": 0, "cache_write_tokens": 0, "reasoning_tokens": 0},
+    "usage": {
+        "input_tokens": 1,
+        "output_tokens": 2,
+        "cached_input_tokens": 0,
+        "cache_write_tokens": 0,
+        "reasoning_tokens": 0,
+    },
 }
 
 

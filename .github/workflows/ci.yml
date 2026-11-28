@@ -104,6 +104,9 @@ jobs:
           python -m pip install --quiet --disable-pip-version-check "ruff==0.17.6"
           ruff check package
 
+      - name: Check Python formatting (ruff format)
+        run: ruff format --check package
+
       - name: Lint JavaScript (eslint)
         working-directory: package
         run: npm run lint
