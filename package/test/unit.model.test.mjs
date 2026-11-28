@@ -41,7 +41,11 @@ function withEvents(events, after) {
 }
 
 test("doStream emits start, text deltas and a mapped finish", async () => {
-  const harness = withEvents([{ type: "text", text: "Hel" }, { type: "text", text: "lo" }, RESULT([{ type: "text", text: "Hello" }])])
+  const harness = withEvents([
+    { type: "text", text: "Hel" },
+    { type: "text", text: "lo" },
+    RESULT([{ type: "text", text: "Hello" }]),
+  ])
   const model = new VibeModel("zai-glm-5-3-flash", harness.execute)
   const parts = await collectStream((await model.doStream(OPTIONS)).stream)
   assert.deepEqual(
@@ -59,7 +63,16 @@ test("doStream reports unsupported option warnings", async () => {
   const harness = withEvents([RESULT([{ type: "text", text: "ok" }])])
   const model = new VibeModel("zai-glm-5-3-flash", harness.execute)
   const parts = await collectStream(
-    (await model.doStream({ ...OPTIONS, topK: 3, seed: 1, stopSequences: ["x"], presencePenalty: 1, frequencyPenalty: 1 })).stream,
+    (
+      await model.doStream({
+        ...OPTIONS,
+        topK: 3,
+        seed: 1,
+        stopSequences: ["x"],
+        presencePenalty: 1,
+        frequencyPenalty: 1,
+      })
+    ).stream,
   )
   const warnings = parts[0].warnings.map((warning) => warning.feature)
   assert.deepEqual(warnings, ["topK", "seed", "stopSequences", "presencePenalty", "frequencyPenalty"])
@@ -67,7 +80,7 @@ test("doStream reports unsupported option warnings", async () => {
 
 test("doStream maps tool_call finishes and enqueues offered tool calls", async () => {
   const harness = withEvents([
-    RESULT([{ type: "tool_call", id: "call_1", name: "read", arguments_json: "{\"path\":\"x\"}" }], "tool_call"),
+    RESULT([{ type: "tool_call", id: "call_1", name: "read", arguments_json: '{"path":"x"}' }], "tool_call"),
   ])
   const model = new VibeModel("zai-glm-5-3-flash", harness.execute)
   const parts = await collectStream((await model.doStream(OPTIONS)).stream)
@@ -102,7 +115,10 @@ test("doStream maps content_filter finishes and emits reasoning from the result"
   const model = new VibeModel("zai-glm-5-3-flash", harness.execute)
   const parts = await collectStream((await model.doStream(OPTIONS)).stream)
   assert.equal(parts.at(-1).finishReason.unified, "content-filter")
-  const reasoning = parts.filter((part) => part.type === "reasoning-delta").map((part) => part.delta).join("")
+  const reasoning = parts
+    .filter((part) => part.type === "reasoning-delta")
+    .map((part) => part.delta)
+    .join("")
   assert.equal(reasoning, "pondered")
 })
 
@@ -132,27 +148,31 @@ test("doStream fails when the bridge returns no result event", async () => {
 
 test("doStream rejects forced tool choice, structured output and provider tools", async () => {
   const model = new VibeModel("zai-glm-5-3-flash", async () => {})
-  await assert.rejects(
-    model.doStream({ ...OPTIONS, toolChoice: { type: "required" } }),
-    /forced tool choice/,
-  )
+  await assert.rejects(model.doStream({ ...OPTIONS, toolChoice: { type: "required" } }), /forced tool choice/)
   await assert.rejects(model.doStream({ ...OPTIONS, toolChoice: { type: "tool" } }), /forced tool choice/)
   await assert.rejects(model.doStream({ ...OPTIONS, responseFormat: { type: "json" } }), /structured output/)
-  await assert.rejects(
-    model.doStream({ ...OPTIONS, tools: [{ type: "provider" }] }),
-    /function tools only/,
-  )
+  await assert.rejects(model.doStream({ ...OPTIONS, tools: [{ type: "provider" }] }), /function tools only/)
 })
 
 test("doStream honours toolChoice none and maps efforts through the fallbacks", async () => {
   const harness = withEvents([RESULT([{ type: "text", text: "ok" }])])
   const deepseek = new VibeModel("deepseek-v4-1-flash-1017", harness.execute)
-  await collectStream((await deepseek.doStream({ ...OPTIONS, toolChoice: { type: "none" }, providerOptions: { "mistral-vibe": { effort: "medium" } } })).stream)
+  await collectStream(
+    (
+      await deepseek.doStream({
+        ...OPTIONS,
+        toolChoice: { type: "none" },
+        providerOptions: { "mistral-vibe": { effort: "medium" } },
+      })
+    ).stream,
+  )
   assert.equal(harness.seen[0].effort, "high", "deepseek medium must be replaced by high")
   assert.deepEqual(harness.seen[0].tools, [], "toolChoice none must send an empty tool list")
 
   const glm = new VibeModel("zai-glm-5-3-flash", harness.execute)
-  await collectStream((await glm.doStream({ ...OPTIONS, providerOptions: { "mistral-vibe": { effort: "low" } } })).stream)
+  await collectStream(
+    (await glm.doStream({ ...OPTIONS, providerOptions: { "mistral-vibe": { effort: "low" } } })).stream,
+  )
   assert.equal(harness.seen[1].effort, "low")
 })
 
@@ -182,7 +202,11 @@ test("doStream cancel() stops event delivery", async () => {
 })
 
 test("doGenerate aggregates streamed blocks into one result", async () => {
-  const harness = withEvents([{ type: "text", text: "Hel" }, { type: "text", text: "lo" }, RESULT([{ type: "text", text: "Hello" }])])
+  const harness = withEvents([
+    { type: "text", text: "Hel" },
+    { type: "text", text: "lo" },
+    RESULT([{ type: "text", text: "Hello" }]),
+  ])
   const model = new VibeModel("zai-glm-5-3-flash", harness.execute)
   const result = await model.doGenerate(OPTIONS)
   assert.equal(result.content[0].type, "text")

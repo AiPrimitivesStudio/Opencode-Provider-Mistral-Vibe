@@ -128,10 +128,7 @@ export default Plugin.define({
         if (info.installed) await refresh()
       },
       (error: unknown) => {
-        console.error(
-          "Mistral Vibe runtime bootstrap failed",
-          error instanceof Error ? error.message : String(error),
-        )
+        console.error("Mistral Vibe runtime bootstrap failed", error instanceof Error ? error.message : String(error))
       },
     )
     return async () => {

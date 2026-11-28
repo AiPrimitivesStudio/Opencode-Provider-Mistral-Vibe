@@ -85,7 +85,9 @@ export async function runBridge(request, { env, timeoutMs = 60_000 } = {}) {
 
 /** The opencode service endpoint and Basic auth credentials. */
 export function opencodeService() {
-  const service = JSON.parse(readFileSync(join(process.env.USERPROFILE ?? "", ".config", "opencode", "service.json"), "utf8"))
+  const service = JSON.parse(
+    readFileSync(join(process.env.USERPROFILE ?? "", ".config", "opencode", "service.json"), "utf8"),
+  )
   const port = process.env.OPENCODE_PORT ?? "28894"
   const url = `http://127.0.0.1:${port}`
   const auth = "Basic " + Buffer.from(`opencode:${service.password}`).toString("base64")

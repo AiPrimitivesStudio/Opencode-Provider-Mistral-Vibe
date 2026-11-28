@@ -44,6 +44,8 @@
     "test:e2e": "node --import ./test/loader.mjs --experimental-transform-types --test \"test/bridge*.test.mjs\" \"test/e2e*.test.mjs\"",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "coverage": "c8 --check-coverage --lines 85 --branches 85 --all --include \"src/**/*.ts\" --reporter=text --reporter=text-summary node --import ./test/loader.mjs --experimental-transform-types --test \"test/*.test.mjs\"",
     "dev": "node ../../../scripts/dev.mjs",
     "publish:live": "node ../../../scripts/publish.mjs"
@@ -61,6 +63,7 @@
     "c8": "^12.0.0",
     "eslint": "^10.16.0",
     "globals": "^17.14.0",
+    "prettier": "^3.10.1",
     "typescript": "^5.9.0",
     "typescript-eslint": "^8.74.0"
   },

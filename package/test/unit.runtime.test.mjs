@@ -5,9 +5,8 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { fileURLToPath } from "node:url"
 
-const { isCompatible, resolveRuntimePython, installRuntime, runtimeBase, REQUIRED_VIBE_VERSION, MARKER } = await import(
-  "../src/runtime.ts"
-)
+const { isCompatible, resolveRuntimePython, installRuntime, runtimeBase, REQUIRED_VIBE_VERSION, MARKER } =
+  await import("../src/runtime.ts")
 
 const bin = process.platform === "win32" ? "Scripts" : "bin"
 const exe = process.platform === "win32" ? "python.exe" : "python"
@@ -159,7 +158,9 @@ test("installRuntime: a failing installer surfaces stderr and cleans the temp di
   const previous = process.env.OPENCODE_VIBE_INSTALLER
   process.env.OPENCODE_VIBE_INSTALLER = fixture("runtime-installer-fail.mjs")
   try {
-    await assert.rejects(installRuntime(dir), (error) => /installer exploded: simulated network failure/.test(error.message))
+    await assert.rejects(installRuntime(dir), (error) =>
+      /installer exploded: simulated network failure/.test(error.message),
+    )
     assert.ok(!existsSync(`${dir}.tmp-${process.pid}`), "the temp dir must be cleaned up")
   } finally {
     process.env.OPENCODE_VIBE_INSTALLER = previous

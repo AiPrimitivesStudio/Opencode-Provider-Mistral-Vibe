@@ -4,11 +4,7 @@
 import globals from "globals"
 import tseslint from "typescript-eslint"
 
-export default tseslint.config(
-  { ignores: ["node_modules/**", "coverage/**"] },
-  ...tseslint.configs.recommended,
-  {
-    files: ["**/*.mjs"],
-    languageOptions: { globals: globals.node },
-  },
-)
+export default tseslint.config({ ignores: ["node_modules/**", "coverage/**"] }, ...tseslint.configs.recommended, {
+  files: ["**/*.mjs"],
+  languageOptions: { globals: globals.node },
+})

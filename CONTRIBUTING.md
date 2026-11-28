@@ -40,6 +40,7 @@ self-contained.
 CI runs these on every pull request, and they are the same commands locally:
 
 ```sh
+npm run format:check  # formatting gate (prettier; npm run format fixes)
 npm run typecheck      # tsc --noEmit
 npm run test:unit      # offline unit suite, no API spend
 npm run coverage:unit  # c8 gate: >= 85% lines AND >= 85% branches
@@ -47,7 +48,7 @@ ruff check .           # Python lint (pip install ruff; config in ruff.toml)
 npm run lint           # JS/TS lint (eslint; config in eslint.config.mjs)
 ```
 
-All five are expected green before review.
+All six are expected green before review.
 
 The token-spending suites (`npm run test:e2e`, `npm run coverage`) hit the real
 Mistral API through the real Vibe plan and are **not** run in CI and are not

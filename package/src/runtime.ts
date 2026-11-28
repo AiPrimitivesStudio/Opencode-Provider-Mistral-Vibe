@@ -117,7 +117,9 @@ function run(command: string, args: string[], what: string): Promise<void> {
     child.on("close", (code) =>
       code === 0
         ? resolve()
-        : reject(new Error(`${what} failed (${command} ${args.join(" ")}), exit ${code}: ${stderr.slice(-2000).trim()}`)),
+        : reject(
+            new Error(`${what} failed (${command} ${args.join(" ")}), exit ${code}: ${stderr.slice(-2000).trim()}`),
+          ),
     )
   })
 }
@@ -148,7 +150,9 @@ export async function installRuntime(dir: string): Promise<"installed" | "waited
         await sleep(LOCK_POLL_MS())
         if (managedRuntime(base)) return "waited"
       }
-      throw new Error("Another process is already installing the Mistral Vibe runtime; wait for it to finish and retry.")
+      throw new Error(
+        "Another process is already installing the Mistral Vibe runtime; wait for it to finish and retry.",
+      )
     }
     await writeFile(lockPath, String(process.pid)) // stale lock: take over
     lockHeld = true
@@ -159,10 +163,12 @@ export async function installRuntime(dir: string): Promise<"installed" | "waited
     const seam = process.env.OPENCODE_VIBE_INSTALLER
     if (seam) {
       await run(process.execPath, [seam, tmp, REQUIRED_VIBE_VERSION], "Mistral Vibe runtime install")
-    } else if (await run(uvCommand(), ["--version"], "uv").then(
-      () => true,
-      () => false,
-    )) {
+    } else if (
+      await run(uvCommand(), ["--version"], "uv").then(
+        () => true,
+        () => false,
+      )
+    ) {
       await run(uvCommand(), ["venv", tmp], "Mistral Vibe runtime install (uv venv)")
       await run(
         uvCommand(),

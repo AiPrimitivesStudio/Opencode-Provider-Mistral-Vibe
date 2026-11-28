@@ -67,7 +67,13 @@ test("bridge generate completes a chat against the Vibe plan", async () => {
     .map((event) => event.text)
     .join("")
   assert.ok(text.trim().length > 0, "generate must produce non-empty text")
-  for (const key of ["input_tokens", "output_tokens", "cached_input_tokens", "cache_write_tokens", "reasoning_tokens"]) {
+  for (const key of [
+    "input_tokens",
+    "output_tokens",
+    "cached_input_tokens",
+    "cache_write_tokens",
+    "reasoning_tokens",
+  ]) {
     assert.equal(typeof result.usage[key], "number", `usage.${key} must be a number`)
   }
 })
@@ -98,8 +104,5 @@ test("bridge.py requests carry the vibe_code billing metadata (source contract)"
 
 test("bridge.py must not dump full requests to disk (privacy)", async () => {
   const source = readFileSync(bridgePath, "utf8")
-  assert.ok(
-    !source.includes("bridge-last-request"),
-    "the bridge must not persist user prompts/requests to disk",
-  )
+  assert.ok(!source.includes("bridge-last-request"), "the bridge must not persist user prompts/requests to disk")
 })

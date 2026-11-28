@@ -91,6 +91,10 @@ jobs:
         working-directory: package
         run: npm install --no-audit --no-fund
 
+      - name: Check formatting (prettier)
+        working-directory: package
+        run: npm run format:check
+
       - name: Typecheck
         working-directory: package
         run: npm run typecheck
